@@ -4,7 +4,7 @@ import time
 import paramiko
 import random
 from hashlib import sha1
-
+from StringIO import StringIO
 IP, PASSWORD = open('secret.txt','rb').readlines()
 INSTALLER_SCRIPT = r'https://raw.githubusercontent.com/Xeoncross/lowendscript/master/setup-debian.sh'
 
@@ -14,7 +14,7 @@ SAVE_PATH = r'setup_script.sh'
 
 SLEEP_INTERVAL = 0.1
 
-LAMP_STACK_COMMANDS = ['dropbear 22', 'mysql', 'nginx', 'php', 'site ' + IP, 'mysqluser ' + IP, 'wordpress ' + IP]
+LAMP_STACK_COMMANDS = ['dropbear 22', 'nginx', 'php', 'mysqluser ' + IP, 'wordpress ' + IP]
 CLEANUP =  ['apt-get -q -y update',
 			'apt-get -q -y upgrade',
 			'apt-get -q -y autoremove']
@@ -29,14 +29,18 @@ def create_client():
 	c.connect(IP, username='root', password=PASSWORD)
 	return c
 
-# def bypass_inital_root(client):
-# 	# This might be our first login, generate a extremely strong random password (SHA1 of a number 2**64 stringified)
-# 	# temporarily in case we need to switch passwords on login
-# 	# not in use at the moment
-# 	mech = sha1()
-# 	sha1.update(str(random.randint(0,2**64 - 1)))
-# 	temp_password = sha.digest().encode('base64')
-# 	log_info('Setting password to ' + temp_password + ' temporarily!, if something goes wrong/crashes, know this is your password.')
+
+def sftp_client(client):
+	return paramiko.SFTPClient.from_transport(client.get_transport())
+
+def random_pass():
+	# This might be our first login, generate a extremely strong random password
+	# temporarily in case we need to switch passwords on login
+	# not in use at the moment
+	mech = sha1()
+	mech.update(str(random.getrandbits(512)))
+	return mech.digest().encode('base64').replace('\\','').replace('=','')
+ 	
 
 
 def perform_cleanup_upgrades(client):
@@ -45,11 +49,35 @@ def perform_cleanup_upgrades(client):
 		run_command(client, cmd)
 	log_info("finished updating")
 
+
+
 def install_lamp_stack(client):
+	log_info("Installing MYSQL (Might throw a few errors, don't worry if the SQL server doesn't start)")
+	sql_pass = random_pass()
+	log_info("Installing with password " + sql_pass)
+	run_command(client, 'export DEBIAN_FRONTEND="noninteractive"')
+	run_command(client, 'sudo debconf-set-selections <<< "mysql-server mysql-server/root_password password "' + sql_pass)
+	run_command(client, 'sudo debconf-set-selections <<< "mysql-server mysql-server/root_password_again password "' + sql_pass)
+	run_command(client, 'apt-get install -y mysql-server')
+	sfc = sftp_client(client)
+	log_info("Uploading my.cnf")
+	sfc.putfo(StringIO('[client]\nuser=root\npassword=' + sql_pass), '.my.cnf')
+	log_info("Rebooting MYSQLD_SAFE quietly")
+	run_command(client, 'nohup myslqd_safe & 2>&1')
+	log_info("Waiting for MYSQL to run (1s)")
+	time.sleep(1)
+	stdd, stde = run_command(client, 'ps aux | grep sql')
+	out = stdd + stde
+	if "/mysqld" in out:
+		log_info("MYSQL Is running fine!")
+	else:
+		log_info("Uh oh!, MYSQL is not rnuning")
 	log_info("Installing LAMP Stack")
 	for cmd in LAMP_STACK_COMMANDS:
 		run_command(client, './' + SAVE_PATH + ' ' + cmd)
+	run_command(client, 'apt-get install -y php5-mysql')
 	log_info("LAMP Stack installed")
+	return sql_pass
 
 
 def run_command(client, command):
@@ -58,8 +86,10 @@ def run_command(client, command):
 	stdin,stdout,stderr = client.exec_command(command)
 	wait_for_close(stderr.channel)
 	wait_for_close(stdout.channel)
+
 	stdd, stde = stdout.read(), stderr.read()
 	log_console(stdd, stde)
+
 	return (stdd, stde)
 
 def log_info(log):
@@ -91,7 +121,11 @@ def main():
 	c = create_client()
 	fetch_script(c)
 	perform_cleanup_upgrades(c)
-	install_lamp_stack(c)
-
+	sql_pass = install_lamp_stack(c)
+	print "\n" * 4
+	print "-" * 80
+	print "[*] Installation Completed! Wordpress Live at " + IP
+	print "[*] Root SQL Password: " + sql_pass
+	print "-" * 80
 
 main()
