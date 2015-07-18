@@ -58,15 +58,38 @@ creatorApp.controller('HomeCtrl', function($scope, $location, Restangular) {
 
 
 function installer_message(msg, $scope) {
-  console.log(msg);  
+  obj = angular.fromJson(msg.data);
+  console.log(msg.data)
+  if(obj.type == "LOG_MAIN") {
+    $scope.main_log.push({"data" : obj.payload, "class" : "list-group-item-info"})
+  }
+  if(obj.type == "LOG_ERROR"){
+    $scope.main_log.push({"data" : obj.payload, "class" : "list-group-item-danger"})
+  }
+   if(obj.type == "LOG_INFO"){
+    $scope.main_log.push({"data" : obj.payload, "class" : "list-group-item-success"})
+  }
+  if(obj.type == "LOG_SECONDARY"){
+    $scope.secondary_log = obj.payload + "\n" + $scope.secondary_log;
+  }
+
+  if(obj.type == "PROGRESS_REPORT"){
+    console.log("Updating progress")
+    $scope.progress_prec = obj.payload
+  }
+
 }
 
-function install_server(server_id) {
-  return {type : 'INSTALL_CMD', 'server_id' : server_id}
+function install_server(msg) {
+  msg['type'] = 'INSTALL_CMD'
+  return msg
 }
 creatorApp.controller('InstallCtrl', function($scope,$websocket, $route, $routeParams, Restangular) {
         $scope.install_id = $route.current.params.installId;
-        r = $scope.base = Restangular.one('/api/website/' +  $scope.install_id).get();
+        r = Restangular.one('/api/website/' +  $scope.install_id).get();
+        $scope.progress_prec = "5";
+        $scope.main_log = [];
+        $scope.secondary_log = "";
         r.then(function(site) {
           $scope.site = site;
           console.log("Successfully loaded site installer");
@@ -74,8 +97,9 @@ creatorApp.controller('InstallCtrl', function($scope,$websocket, $route, $routeP
 
           var dataStream = $websocket('ws://127.0.0.1:9190');
           console.log("Sending data")
-          dataStream.send(install_server($scope.install_id));
-          dataStream.onMessage(function(msg) { installer_msg(msg, $scope); });
+          dataStream.send(install_server($scope.site));
+          setInterval(function(){dataStream.send({"ping":"pong"})}, 2000);
+          dataStream.onMessage(function(msg) { installer_message(msg, $scope); });
 
 
         });

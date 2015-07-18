@@ -5,7 +5,7 @@ import paramiko
 import random
 from hashlib import sha1
 from StringIO import StringIO
-IP, PASSWORD = open('secret.txt','rb').readlines()
+
 INSTALLER_SCRIPT = r'https://raw.githubusercontent.com/Xeoncross/lowendscript/master/setup-debian.sh'
 
 
@@ -14,19 +14,20 @@ SAVE_PATH = r'setup_script.sh'
 
 SLEEP_INTERVAL = 0.1
 
-LAMP_STACK_COMMANDS = ['dropbear 22', 'nginx', 'php', 'mysqluser ' + IP, 'wordpress ' + IP]
+LAMP_STACK_COMMANDS = ['dropbear 22', 'nginx', 'php'] #'mysqluser ' + IP, 'wordpress ' + IP]
 CLEANUP =  ['apt-get -q -y update',
 			'apt-get -q -y upgrade',
 			'apt-get -q -y autoremove']
 
 
-def create_client():
+def create_client(ip,user,passw):
 	c = paramiko.client.SSHClient()
 	# Tag client with IP address
-	c.ip = IP
+	c.ip = ip
 	c.load_system_host_keys()
 	c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-	c.connect(IP, username='root', password=PASSWORD)
+	log("Attempting to connect to " + ip + " at port 22 with SSH")
+	c.connect(ip, username=user, password=passw)
 	return c
 
 
@@ -50,9 +51,8 @@ def perform_cleanup_upgrades(client):
 	log_info("finished updating")
 
 
-
-def install_lamp_stack(client):
-	log_info("Installing MYSQL (Might throw a few errors, don't worry if the SQL server doesn't start)")
+def install_mysql(client):
+	log_info("Installing MYSQL")
 	sql_pass = random_pass()
 	log_info("Installing with password " + sql_pass)
 	run_command(client, 'export DEBIAN_FRONTEND="noninteractive"')
@@ -68,16 +68,21 @@ def install_lamp_stack(client):
 	time.sleep(1)
 	stdd, stde = run_command(client, 'ps aux | grep sql')
 	out = stdd + stde
+	success = None
 	if "/mysqld" in out:
+		success = True
 		log_info("MYSQL Is running fine!")
 	else:
+		success = False
 		log_info("Uh oh!, MYSQL is not rnuning")
+	return (success, sql_pass)
+
+def install_lamp_stack(client):
 	log_info("Installing LAMP Stack")
 	for cmd in LAMP_STACK_COMMANDS:
 		run_command(client, './' + SAVE_PATH + ' ' + cmd)
 	run_command(client, 'apt-get install -y php5-mysql')
 	log_info("LAMP Stack installed")
-	return sql_pass
 
 
 def run_command(client, command):
@@ -92,15 +97,18 @@ def run_command(client, command):
 
 	return (stdd, stde)
 
-def log_info(log):
-	print "\n{{!}} INFO: " + log
+def log(msg):
+	print msg
+
+def log_info(msg):
+	log("INFO: " + msg)
 
 def log_cmd(command):
-	print "\n(*!*) Executing: " + command
+	log("Executing: " + command)
 
 def log_console(stdout='', stderr=''):
-	print '\n'.join(['[!] ' + l for l in stderr.splitlines()])
-	print '\n'.join(['[*] ' + l for l in stderr.splitlines()])
+	log('\n'.join(['[STDERR] ' + l for l in stderr.splitlines()]))
+	log('\n'.join(['[STDOUT] ' + l for l in stderr.splitlines()]))
 
 def fetch_script(client):
 	run_command(client, 'wget --no-check-certificate ' + INSTALLER_SCRIPT + ' -O ' + SAVE_PATH)
@@ -117,15 +125,13 @@ def wait_for_close(channel, max_sleep = 600):
 
 
 
-def main():
-	c = create_client()
-	fetch_script(c)
-	perform_cleanup_upgrades(c)
-	sql_pass = install_lamp_stack(c)
-	print "\n" * 4
-	print "-" * 80
-	print "[*] Installation Completed! Wordpress Live at " + IP
-	print "[*] Root SQL Password: " + sql_pass
-	print "-" * 80
-
-main()
+# def main():
+# 	c = create_client()
+# 	fetch_script(c)
+# 	perform_cleanup_upgrades(c)
+# 	sql_pass = install_lamp_stack(c)
+# 	print "\n" * 4
+# 	print "-" * 80
+# 	print "[*] Installation Completed! Wordpress Live at " + IP
+# 	print "[*] Root SQL Password: " + sql_pass
+# 	print "-" * 80

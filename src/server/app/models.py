@@ -7,7 +7,11 @@ class Target(object):
 		self.ip = ip
 		self.user = user
 		self.password = password
-		self.id = cont.next()
+		try:
+			self.id = cont.next()
+		except:
+			self.id = 0
+		print("Ownt construct")
 
 	def __repr__(self):
 		return "<Target IP:{ip}>".format(ip=self.ip)

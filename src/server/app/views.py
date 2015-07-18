@@ -1,5 +1,5 @@
 from flask.views import View
-from flask import render_template, request
+from flask import render_template, request, abort
 from flask_restful import Api, Resource
 from flask_restful import reqparse
 import globs
@@ -21,6 +21,10 @@ class Website(Resource):
 
 class WebsiteSpecific(Resource):
 	def get(self, site_id):
+		if int(site_id) > len(globs.TARGETS):
+			print "SiteID: " + str(site_id), " GlobalLen:" + str(len(globs.TARGETS))
+			print "SiteID TYPE: " + type(site_id)
+			return abort(500)
 		t =  json.loads(globs.TARGETS[int(site_id)].to_JSON())
 		return t
 
