@@ -1,23 +1,20 @@
 <!DOCTYPE html>
-<html ng-app="Blog" ng-controller="ApplicationCtrl">
+<html ng-app="creatorApp" ng-controller="ApplicationCtrl">
     <head>
         <meta charset="utf-8" />
         <title>Blog</title>
  
-        <link rel="stylesheet" type="text/css" href="./bower_components/bootstrap/dist/css/bootstrap.css">
-        <link rel="stylesheet" type="text/css" href="./css/theme.css">
-        <link rel="stylesheet" type="text/css" href="./css/styles.css">
+        <link rel="stylesheet" type="text/css" href="static/bower_components/bootstrap/dist/css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="static/css/theme.css">
+        <link rel="stylesheet" type="text/css" href="static/css/styles.css">
     </head>
     <body>
  
         <div class="blog-masthead">
             <div class="container">
                 <nav class="blog-nav">
-                    <a class="blog-nav-item" href="#" ng-class="{active: isActive('/')}">Home</a>
-                    <a class="blog-nav-item" href="#/sessions/create" ng-hide="isLoggedIn" ng-class="{active: isActive('/sessions/create')}">Login</a>
-                    <a class="blog-nav-item" href="#/sessions/destroy" ng-show="isLoggedIn">Logout</a>
-                    <a class="blog-nav-item" href="#/users/create" ng-class="{active: isActive('/users/create')}">Register</a>
-                    <a class="blog-nav-item" href="#/posts/create" ng-show="isLoggedIn" ng-class="{active: isActive('/posts/create')}">Create a post</a>
+                    <a class="blog-nav-item" href="#/home" >Home</a>
+                    <a class="blog-nav-item" href="#/new_website">New Website</a>
                 </nav>
             </div>
         </div>
@@ -33,12 +30,14 @@
                 <a href="#">Back to top</a>
             </p>
         </div>
- 
-        <script type="text/javascript" src="./bower_components/angularjs/angular.js"></script>
-        <script type="text/javascript" src="./bower_components/angular-route/angular-route.js"></script>
-        <script type="text/javascript" src="./bower_components/lodash/dist/lodash.js"></script>
-        <script type="text/javascript" src="./bower_components/restangular/dist/restangular.js"></script>
-        <script type="text/javascript" src="./bower_components/angular-local-storage/angular-local-storage.js"></script>
+        <script type="text/javascript" src="static/bower_components/angularjs/angular.js"></script>
+        <script type="text/javascript" src="static/bower_components/angular-route/angular-route.js"></script>
+        <script type="text/javascript" src="static/bower_components/lodash/lodash.js"></script>
+        <script type="text/javascript" src="static/bower_components/restangular/dist/restangular.js"></script>
+        <script type="text/javascript" src="static/bower_components/autobahn/autobahn.js"></script>
+        <script type="text/javascript" src="static/js/main.js"></script>
+        <script type="text/javascript" src="static/js/controllers.js"></script>
+        
    
     </body>
 </html>

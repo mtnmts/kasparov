@@ -1,0 +1,40 @@
+{
+  "name": "angular-wamp",
+  "version": "0.1.6",
+  "main": "./release/angular-wamp.js",
+  "authors": [
+    "David Dan <davidwdan@gmail.com>"
+  ],
+  "description": "Angular library for Autobahn.js (WAMP v2)",
+  "keywords": [
+    "WAMP",
+    "websockets",
+    "AutobahnJS",
+    "Thruway",
+    "Ratchet",
+    "Angular"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.2.0",
+    "autobahn": ">= 0.9.5"
+  },
+  "homepage": "https://github.com/voryx/angular-wamp",
+  "_release": "0.1.6",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.6",
+    "commit": "b554acbe0737289b84f100badc08dd67ac088926"
+  },
+  "_source": "git://github.com/voryx/angular-wamp.git",
+  "_target": "~0.1.6",
+  "_originalSource": "angular-wamp"
+}
