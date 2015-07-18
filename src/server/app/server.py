@@ -26,4 +26,7 @@ def after_request(response):
 import views
 
 api.add_resource(views.Website, '/api/website')
+api.add_resource(views.WebsiteSpecific, '/api/website/<string:site_id>')
+
+
 app.add_url_rule('/', view_func=views.ShowIndex.as_view('show_index'))

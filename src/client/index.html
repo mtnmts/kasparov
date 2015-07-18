@@ -2,7 +2,7 @@
 <html ng-app="creatorApp" ng-controller="ApplicationCtrl">
     <head>
         <meta charset="utf-8" />
-        <title>Blog</title>
+        <title>The Creator - By Matessim</title>
  
         <link rel="stylesheet" type="text/css" href="static/bower_components/bootstrap/dist/css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="static/css/theme.css">
@@ -18,7 +18,7 @@
                 </nav>
             </div>
         </div>
- 
+        <div><flash:messages></flash:messages></div></br>
         <div class="container main-view">
  
             <div ng-view></div>
@@ -32,9 +32,12 @@
         </div>
         <script type="text/javascript" src="static/bower_components/angularjs/angular.js"></script>
         <script type="text/javascript" src="static/bower_components/angular-route/angular-route.js"></script>
+        <script type="text/javascript" src="static/bower_components/angular-mocks/angular-mocks.js"></script>
+        <script type="text/javascript" src="static/bower_components/angular-websocket/angular-websocket.js"></script>
         <script type="text/javascript" src="static/bower_components/lodash/lodash.js"></script>
         <script type="text/javascript" src="static/bower_components/restangular/dist/restangular.js"></script>
-        <script type="text/javascript" src="static/bower_components/autobahn/autobahn.js"></script>
+
+        <script type="text/javascript" src="static/js/angular-flash.js"></script>
         <script type="text/javascript" src="static/js/main.js"></script>
         <script type="text/javascript" src="static/js/controllers.js"></script>
         

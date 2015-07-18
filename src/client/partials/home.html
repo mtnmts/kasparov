@@ -1,6 +1,11 @@
-Welcome!
 <ul class="list-group">
 	<li class="list-group-item list-group-item-info" ng-repeat="website in websites">
-		  <span><span class="glyphicon glyphicon-star" aria-hidden="true"></span><b>IP Address:</b>{{ website.ip }}</br></span>
+		  <span><span class="glyphicon glyphicon-star" aria-hidden="true"></span><b>IP Address:</b>{{ website.ip }} 
+		  	<span class="pull-right">
+			  	<button type="button" class="btn btn-xs" data-id="{{website.id}}" ng-click="install($event)">
+	  				<span class="glyphicon glyphicon-play" aria-hidden="true"></span> Install
+				</button>
+			</span>
+		  </span>
 	</li>
 </ul>

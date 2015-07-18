@@ -13,9 +13,19 @@ class ShowIndex(View):
 class Website(Resource):
 	def post(self):
 		json_data = request.get_json(force=True)
-		print json_data
 		globs.TARGETS.append(Target(json_data['ip'],json_data['pass']))
-		print globs.TARGETS
+		return {'server_id' : len(globs.TARGETS) - 1}
 
 	def get(self):
 		return [json.loads(g.to_JSON()) for g in globs.TARGETS]
+
+class WebsiteSpecific(Resource):
+	def get(self, site_id):
+		t =  json.loads(globs.TARGETS[int(site_id)].to_JSON())
+		return t
+
+class Install(Resource):
+	def post(self):
+		json_data = request.get_json(force=true)
+		install_target = globs[int(json_data['id'])]
+		
