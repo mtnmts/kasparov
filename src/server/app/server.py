@@ -2,6 +2,9 @@ import os
 
 from flask import Flask
 from flask_restful import Resource, Api
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../')
 
