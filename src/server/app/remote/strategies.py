@@ -104,12 +104,17 @@ class NewWebsiteStrategy(DebianStrategy):
         #self._server_connection.saveFile(fname, fdata)
         return True
 
+    def get_site_directory(self):
+        return "/var/www/{site}".format(self._site)
+
+    def get_http_root(self):
+        return "/var/www/{site}/public".format(self._site)
 
 class MysqlStrategy(DebianStrategy):
     PRE_INSTALL_COMMANDS = ' && '.join(['export DEBIAN_FRONTEND="noninteractive"',
-                            'debconf-set-selections <<< "mysql-server mysql-server/root_password password {passw}"',
-                            'debconf-set-selections <<< "mysql-server mysql-server/root_password_again password {passw}"'
-                            ,'apt-get install -y mysql-server'])
+                            'echo mysql-server mysql-server/root_password password {passw} | debconf-set-selections',
+                            'echo mysql-server mysql-server/root_password_again password {passw} | debconf-set-selections',
+                            'apt-get install -y mysql-server'])
     
     def __init__(self, server_connection, sql_pass=None):
         super(self.__class__, self).__init__(server_connection)
@@ -120,7 +125,7 @@ class MysqlStrategy(DebianStrategy):
 
  
     def execute(self):
-        self._server_connection.runCommand(MysqlStrategy.PRE_INSTALL_COMMANDS)
+        self._server_connection.runCommand(MysqlStrategy.PRE_INSTALL_COMMANDS.format(passw=self._sql_pass))
         if not self.verifyInstallation('mysql-server'):
             self._logger.error("Failed installing MYSQL Server package")
             return False
@@ -129,15 +134,53 @@ class MysqlStrategy(DebianStrategy):
         if not self._server_connection.runCommandAnticipate('ps aux | grep sql', '.*/mysqld.*'):
             self._logger.error("mysqld failed to start")
             return False
+        self._logger.error(MysqlStrategy.PRE_INSTALL_COMMANDS.format(passw=self._sql_pass))
         return True
 
     def get_password(self):
         return self._sql_pass
 
-def _random_pass(self):
+
+class WordpressStrategy(DebianStrategy):
+    SETUP_WP_COMMANDS = ' && '.join(['cd /tmp',
+                         'rm -rf wp_tmp_dir && mkdir wp_tmp_dir && cd wp_tmp_dir',
+                         'wget http://wordpress.org/latest.tar.gz',
+                         'tar xfz latest.tar.gz',
+                         'mv wordpress/* ./'
+                         'rmdir ./wordpress/ && rm -f latest.tar.gz'])
+
+    def __init__(self, server_connection, website):
+        super(self.__class__, self).__init__(server_connection)
+        self._website = website
+        self._sql_pass = _random_pass()
+        self._sql_user = website.replace('/','').replace('\\','').replace('.','_').replace('-','_') + '_u_wp'
+        self._db_name = website.replace('/','').replace('\\','').replace('.','_').replace('-','_') + '_wp'
+
+    def execute(self):
+        nws = NewWebsiteStrategy(self._server_connection, self._website)
+        if not nws.execute():
+            self._logger.error("Failed to create new website for " + self._website)
+            return False
+        self._prepare_db()
+        self._setup_wp(nws.get_http_root())
+        return True
+
+    def _prepare_db(self):
+        data = resources.WORDPRESS_SQL.format(db_user=self._db_user, db_name=self._db_name, db_pass=self._sql_pass)
+        tmp_fpath = '/tmp/wpss.{rand}'.format(rand=str(random.getrandbits(64)))
+        self._server_connection.saveFile(data, tmp_fpath)
+        self._server_connection.runCommand('mysql < ' + tmp_fpath)
+
+    def _setup_wp(self, doc_root):
+        self._server_connection.runCommand(WordpressStrategy.SETUP_WP_COMMANDS)
+        self._server_connection.runCommand('mv /tmp/wp_tmp_dir/* ' + doc_root)
+
+
+def _random_pass():
     # This might be our first login, generate a extremely strong random password
     # temporarily in case we need to switch passwords on login
     # not in use at the moment
     mech = sha1()
     mech.update(str(random.getrandbits(512)))
     return mech.digest().encode('base64').replace('\\','').replace('=','')
+

@@ -5,6 +5,8 @@ DEFAULT_PHP_NGINX = open(os.path.join(os.path.dirname(__file__),'res', 'default_
 PHP_CONF = open(os.path.join(os.path.dirname(__file__),'res', 'php_conf'),'rb').read()
 APC_20 = open(os.path.join(os.path.dirname(__file__),'res', '20_apc_ini'),'rb').read()
 SITE_AVAILABLE = open(os.path.join(os.path.dirname(__file__),'res', 'site_available'),'rb').read()
+WORDPRESS_SQL = open(os.path.join(os.path.dirname(__file__),'res', 'wordpress_sql_script'),'rb').read()
+
 
 DEFAULT_PHP_NGINX_KEY = "KEY_PHP_NGINX"
 PHP_CONF_KEY = "KEY_PHP_CONF"
