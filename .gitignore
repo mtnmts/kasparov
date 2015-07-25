@@ -1,5 +1,4 @@
 # Hide the testing directory 
-test/
 
 led / optimized / DLL files
 __pycache__/
