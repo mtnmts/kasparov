@@ -1,0 +1,3 @@
+create database {db_name};
+CREATE USER '{db_user}'@'localhost' IDENTIFIED BY '{db_pass}'; 
+GRANT ALL PRIVILEGES ON {db_name}.* to '{db_user}'@'localhost';

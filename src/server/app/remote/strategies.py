@@ -83,20 +83,22 @@ class PhpStrategy(DebianStrategy):
 
 class NewWebsiteStrategy(DebianStrategy):
 
-
     def __init__(self, server_connection, site):
         super(self.__class__, self).__init__(server_connection)
         self._site = site
-    
+
     def execute(self):
         site = self._site
-        self._server_connection.runCommand('mkdir -p /var/www/' + site + '/public')
+        self._server_connection.runCommand(
+            'mkdir -p /var/www/' + site + '/public')
         data, path = resources.RESOURCE[resources.SITE_AVAILABLE_KEY]
         path = path.format(site=site)
         data = data.replace('$1', site)
         self._server_connection.saveFile(data, path)
-        self._server_connection.runCommand('ln -s /etc/nginx/sites-available/{site}.conf /etc/nginx/sites-enabled/{site}.conf'.format(site=site))
-        self._server_connection.runCommand('chown www-data:www-data -R "/var/www/{site}'.format(site=site))
+        self._server_connection.runCommand(
+            'ln -s /etc/nginx/sites-available/{site}.conf /etc/nginx/sites-enabled/{site}.conf'.format(site=site))
+        self._server_connection.runCommand(
+            'chown www-data:www-data -R "/var/www/{site}'.format(site=site))
         self._server_connection.runCommand('invoke-rc.d nginx restart')
         self._server_connection.saveFile(data, path)
         #fname = '/var/www/{site}/public/'.format(site=site) + str(random.getrandbits()) + '.txt'
@@ -105,17 +107,18 @@ class NewWebsiteStrategy(DebianStrategy):
         return True
 
     def get_site_directory(self):
-        return "/var/www/{site}".format(self._site)
+        return "/var/www/{site}".format(site=self._site)
 
     def get_http_root(self):
-        return "/var/www/{site}/public".format(self._site)
+        return "/var/www/{site}/public".format(site=self._site)
+
 
 class MysqlStrategy(DebianStrategy):
     PRE_INSTALL_COMMANDS = ' && '.join(['export DEBIAN_FRONTEND="noninteractive"',
-                            'echo mysql-server mysql-server/root_password password {passw} | debconf-set-selections',
-                            'echo mysql-server mysql-server/root_password_again password {passw} | debconf-set-selections',
-                            'apt-get install -y mysql-server'])
-    
+                                        'echo mysql-server mysql-server/root_password password {passw} | debconf-set-selections',
+                                        'echo mysql-server mysql-server/root_password_again password {passw} | debconf-set-selections',
+                                        'apt-get install -y mysql-server'])
+
     def __init__(self, server_connection, sql_pass=None):
         super(self.__class__, self).__init__(server_connection)
         if sql_pass:
@@ -123,18 +126,20 @@ class MysqlStrategy(DebianStrategy):
         else:
             self._sql_pass = _random_pass()
 
- 
     def execute(self):
-        self._server_connection.runCommand(MysqlStrategy.PRE_INSTALL_COMMANDS.format(passw=self._sql_pass))
+        self._server_connection.runCommand(
+            MysqlStrategy.PRE_INSTALL_COMMANDS.format(passw=self._sql_pass))
         if not self.verifyInstallation('mysql-server'):
             self._logger.error("Failed installing MYSQL Server package")
             return False
-        self._server_connection.saveFile('[client]\nuser=root\npassword=' + self._sql_pass, '.my.cnf')
+        self._server_connection.saveFile(
+            '[client]\nuser=root\npassword=' + self._sql_pass, '.my.cnf')
         self._server_connection.runCommand('nohup myslqd_safe & 2>&1')
         if not self._server_connection.runCommandAnticipate('ps aux | grep sql', '.*/mysqld.*'):
             self._logger.error("mysqld failed to start")
             return False
-        self._logger.error(MysqlStrategy.PRE_INSTALL_COMMANDS.format(passw=self._sql_pass))
+        self._logger.error(
+            MysqlStrategy.PRE_INSTALL_COMMANDS.format(passw=self._sql_pass))
         return True
 
     def get_password(self):
@@ -143,30 +148,41 @@ class MysqlStrategy(DebianStrategy):
 
 class WordpressStrategy(DebianStrategy):
     SETUP_WP_COMMANDS = ' && '.join(['cd /tmp',
-                         'rm -rf wp_tmp_dir && mkdir wp_tmp_dir && cd wp_tmp_dir',
-                         'wget http://wordpress.org/latest.tar.gz',
-                         'tar xfz latest.tar.gz',
-                         'mv wordpress/* ./'
-                         'rmdir ./wordpress/ && rm -f latest.tar.gz'])
+                                     'rm -rf wp_tmp_dir && mkdir wp_tmp_dir && cd wp_tmp_dir',
+                                     'wget http://wordpress.org/latest.tar.gz',
+                                     'tar xfz latest.tar.gz',
+                                     'cd wordpress',
+                                     'mv * ..',
+                                     'cd ..',
+                                     'rmdir ./wordpress/ && rm -f latest.tar.gz'])
+
+    WP_CONF_COMMANDS = ' && '.join(["sed -i 's/database_name_here/{db_name}/g' {conf_path}",
+                                    "sed -i 's/username_here/{db_user}/g' {conf_path}",
+                                    "sed -i 's/password_here/{db_pass}/g' {conf_path}"])
 
     def __init__(self, server_connection, website):
+
         super(self.__class__, self).__init__(server_connection)
         self._website = website
         self._sql_pass = _random_pass()
-        self._sql_user = website.replace('/','').replace('\\','').replace('.','_').replace('-','_') + '_u_wp'
-        self._db_name = website.replace('/','').replace('\\','').replace('.','_').replace('-','_') + '_wp'
+        self._sql_user = website.replace(
+            '/', '').replace('\\', '').replace('.', '_').replace('-', '_') + '_u_wp'
+        self._db_name = website.replace(
+            '/', '').replace('\\', '').replace('.', '_').replace('-', '_') + '_wp'
 
     def execute(self):
         nws = NewWebsiteStrategy(self._server_connection, self._website)
         if not nws.execute():
-            self._logger.error("Failed to create new website for " + self._website)
+            self._logger.error(
+                "Failed to create new website for " + self._website)
             return False
         self._prepare_db()
         self._setup_wp(nws.get_http_root())
         return True
 
     def _prepare_db(self):
-        data = resources.WORDPRESS_SQL.format(db_user=self._db_user, db_name=self._db_name, db_pass=self._sql_pass)
+        data = resources.WORDPRESS_SQL.format(
+            db_user=self._sql_user, db_name=self._db_name, db_pass=self._sql_pass)
         tmp_fpath = '/tmp/wpss.{rand}'.format(rand=str(random.getrandbits(64)))
         self._server_connection.saveFile(data, tmp_fpath)
         self._server_connection.runCommand('mysql < ' + tmp_fpath)
@@ -174,6 +190,11 @@ class WordpressStrategy(DebianStrategy):
     def _setup_wp(self, doc_root):
         self._server_connection.runCommand(WordpressStrategy.SETUP_WP_COMMANDS)
         self._server_connection.runCommand('mv /tmp/wp_tmp_dir/* ' + doc_root)
+        config_path = doc_root + '/wp-config.php'
+        self._server_connection.runCommand(
+            'cp {docroot}/wp-config-sample.php {docroot}/wp-config.php'.format(docroot=doc_root))
+        self._server_connection.runCommand(WordpressStrategy.WP_CONF_COMMANDS.format(
+            db_name=self._db_name, db_pass=self._sql_pass, db_user=self._sql_user,conf_path=config_path))
 
 
 def _random_pass():
@@ -182,5 +203,4 @@ def _random_pass():
     # not in use at the moment
     mech = sha1()
     mech.update(str(random.getrandbits(512)))
-    return mech.digest().encode('base64').replace('\\','').replace('=','')
-
+    return mech.digest().encode('base64').replace('\\', '').replace('=', '').replace('\n', '').replace('\t', '').replace(' ', '')
