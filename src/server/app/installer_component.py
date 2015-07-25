@@ -2,8 +2,9 @@ from autobahn.asyncio.websocket import WebSocketServerProtocol
 import trollius as asyncio
 import json
 import globs
-from app.remote import stratagies
 from app.models import Target
+from app.remote import strategies
+
 INSTALL_CMD_VAL = 'INSTALL_CMD'
 LOG_MAIN_TYPE = "LOG_MAIN"
 LOG_SECONDARY_TYPE = "LOG_SECONDARY"

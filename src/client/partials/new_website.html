@@ -1,16 +1,19 @@
 <div class="center-block">
-  <div class="panel panel-default">
+    <h2>New Server</h2>
+  <div class="panel panel-default marginalize">
   <div class="panel-body">
   <form>
     <div class="form-group">
-      <label for="IpAddrInput">IP Address</label>
+      <label for="IpAddrInput">Host</label>
       <input type="text" class="form-control" id="IpAddrInput" ng-model="website_form.ip" placeholder="0.0.0.0">
     </div>
     <div class="form-group">
-      <label for="rootPasswordInput">root password</label>
+      <label for="rootPasswordInput">Password - (root)</label>
       <input type="password" class="form-control" id="rootPasswordInput" ng-model="website_form.pass" placeholder="Password">
     </div>
-
+      <label ng-repeat="action in actions" style="padding: 5px;">
+        <input type="checkbox"  ng-model="website_form.actions[action.id]" id="{{action.id}}" checklist-value="website_form.actions_chosen"> {{action.text}}
+    </label>
     </div>
     <button type="submit" class="btn btn-default" ng-click="submitNewWebsite(website_form)">Submit</button>
     <button type="submit" class="btn btn-default" ng-click="submitNewWebsiteAnother(website_form)">Submit & Add Another</button>

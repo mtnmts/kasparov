@@ -1,13 +1,3 @@
-function applicationCtrlFn($scope) {
-
-}
-
-
-
-function newWebsiteCtrlFn($scope) {
-
-}
-
 
 
 creatorApp.controller('ApplicationCtrl' ,
@@ -18,6 +8,13 @@ creatorApp.controller('ApplicationCtrl' ,
 
 creatorApp.controller('NewWebsiteCtrl', function($scope, $location,flash,  Restangular) {
       $scope.base = Restangular.all('/api/website');
+      $scope.actions = [
+        {id : 1, text: 'Update & Upgrade (Recommended)'},
+        {id : 2, text: 'nginx (Web Server)'},
+        {id : 3, text: 'mySQL'},
+        {id : 4, text: 'PHP'},
+        {id : 5, text: 'Wordpress'}
+      ]
       $scope.submitNewWebsiteAnother = function (website_form) {
         flash("Added Website!");
         $scope.base.post(website_form);
@@ -44,7 +41,7 @@ creatorApp.controller('NewWebsiteCtrl', function($scope, $location,flash,  Resta
 
 creatorApp.controller('HomeCtrl', function($scope, $location, Restangular) {
       $scope.base = Restangular.all('/api/website');
-      $scope.websites = {'ip' : '0.0.0.0', 'pass' : '1234', 'user': 'root'};
+      //$scope.websites = {'ip' : '0.0.0.0', 'pass' : '1234', 'user': 'root'};
       $scope.base.getList().then(function(webs){
         $scope.websites = webs;
       });

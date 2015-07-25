@@ -13,23 +13,22 @@ class ShowIndex(View):
 class Website(Resource):
 	def post(self):
 		json_data = request.get_json(force=True)
-		globs.TARGETS.append(Target(json_data['ip'],json_data['pass']))
-		return {'server_id' : len(globs.TARGETS) - 1}
+		t_id = globs.TARGETS.add(Target(json_data['ip'],json_data['pass']))
+		print json_data
+		return {'server_id' : t_id}
 
 	def get(self):
-		return [json.loads(g.to_JSON()) for g in globs.TARGETS]
+		return [json.loads(g.to_JSON()) for g in globs.TARGETS.all()]
 
 class WebsiteSpecific(Resource):
 	def get(self, site_id):
-		if int(site_id) > len(globs.TARGETS):
-			print "SiteID: " + str(site_id), " GlobalLen:" + str(len(globs.TARGETS))
-			print "SiteID TYPE: " + type(site_id)
+		if not globs.TARGETS.exists(site_id):
 			return abort(500)
-		t =  json.loads(globs.TARGETS[int(site_id)].to_JSON())
+		t =  json.loads(globs.TARGETS.get(int(site_id)).to_JSON())
 		return t
 
-class Install(Resource):
-	def post(self):
-		json_data = request.get_json(force=true)
-		install_target = globs[int(json_data['id'])]
+# class Install(Resource):
+# 	def post(self):
+# 		json_data = request.get_json(force=true)
+# 		install_target = globs.get((json_data['id']))
 		

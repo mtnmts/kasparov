@@ -3,4 +3,4 @@ from app.installer_component import installer_service
 import threading
 
 
-app.run()
+app.run(port=8080)
