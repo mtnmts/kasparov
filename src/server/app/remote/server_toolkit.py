@@ -7,7 +7,7 @@ import app.consts as consts
 import re
 import traceback
 
-SUPPORTED_PLATFORM_REGEX = ".*deb[6|7].*"
+APT_GET_EXISTS_REGEX = ".*/apt-get"
 
 
 class ServerConnection(object):
@@ -30,8 +30,8 @@ class ServerConnection(object):
         if not self._connected:
             self._logger.info("Verify failed: Not connected")
             return False
-        if not self.RunCommandAnticipate('uname -a', SUPPORTED_PLATFORM_REGEX):
-            self._logger.info("Verify failed: Not debian-based uname -a: " + output)
+        if not self.runCommandAnticipate('which apt-get', APT_GET_EXISTS_REGEX):
+            self._logger.info("Verify failed: Not debian-based uname -a")
             return False
         
         if not self._verify_root():
@@ -41,7 +41,7 @@ class ServerConnection(object):
         return True
     
     def _verify_root(self):
-        if not self.RunCommandAnticipate('/usr/bin/id -u','0'):
+        if not self.runCommandAnticipate('/usr/bin/id -u','0'):
             return False
         return True
 
@@ -63,7 +63,7 @@ class ServerConnection(object):
         stdin, stdout, stderr = self._client.exec_command(command)
         if not self._wait_for_close(stderr.channel) or not self._wait_for_close(stdout.channel):
             self._logger.error("Timed out executing command: " + command)
-            return False
+            raise Exception("Error running command.")
 
         stdd, stde = stdout.read(), stderr.read()
         if  join_streams:
@@ -71,15 +71,20 @@ class ServerConnection(object):
             return '\n'.join(stdj)
         return (stdd, stde)
 
-    def RunCommandAnticipate(self, command, anticipated_regex):
+    def runCommandAnticipate(self, command, anticipated_regex):
         output = self.runCommand(command)
         if output:
             if re.match(anticipated_regex, output):
                 return True
             return False
         else:
-            self._logger.error("RunCommandAnticipate failed running command (Pre-regex test)")
+            self._logger.error("runCommandAnticipate failed running command (Pre-regex test)")
             return False
+
+    def saveFile(self, data, file_path):
+        f = self._sftp.file(file_path,'w')
+        f.write(data)
+        f.close()
 
     def _wait_for_close(self, channel, max_sleep=600):
         SLEEP_INTERVAL = 0.1
@@ -91,4 +96,5 @@ class ServerConnection(object):
             self._logger.error("Timed out waiting for channel to close")
             return False
         return True
+
 

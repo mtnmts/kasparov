@@ -1,0 +1,18 @@
+# Route all requests for non-existent files to index.php
+
+# Pass PHP scripts to php-fastcgi listening on port 9000
+# PHP search for file Exploit:
+# The PHP regex location block fires instead of the try_files block. Therefore we need
+location ~ \.php$ {
+            try_files $uri =404;
+            fastcgi_index   index.php;
+            fastcgi_pass unix:/var/run/php5-fpm.sock;
+            fastcgi_param   SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+            include         fastcgi_params;
+}
+# to add "try_files \$uri =404;" to make sure that "/uploads/virusimage.jpg/hello.php"
+# never executes the hidden php code inside virusimage.jpg because it can't find hello.php!
+# The exploit also can be stopped by adding "cgi.fix_pathinfo = 0" in your php.ini file.
+location / {
+        try_files $uri $uri/ =404;
+}
