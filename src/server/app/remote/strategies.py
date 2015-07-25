@@ -1,6 +1,8 @@
 import app.resources as resources
 import re
+import time
 import logging
+from hashlib import sha1
 import random
 # Installation stratagies
 
@@ -73,10 +75,8 @@ class PhpStrategy(DebianStrategy):
         if not all([self.installPackage(x) for x in PhpStrategy.PHP_PACKAGES]):
             self._logger.error("Failed installing PHP Packages.")
             return False
-        # APC Disabled for now
-        #data, path = resources.RESOURCE[resources.APC_20_KEY]
-        #self._logger.error("PATH: " + path)
-        #self._server_connection.saveFile(data, path)
+        if not any([self.installPackage('php5-apc'), self.installPackage('php-apc')]):
+            self._logger.error('Failed installing PHP5 APC')
         self._server_connection.runCommand('invoke-rc.d php5-fpm restart')
         return True
 
@@ -99,4 +99,45 @@ class NewWebsiteStrategy(DebianStrategy):
         self._server_connection.runCommand('chown www-data:www-data -R "/var/www/{site}'.format(site=site))
         self._server_connection.runCommand('invoke-rc.d nginx restart')
         self._server_connection.saveFile(data, path)
+        #fname = '/var/www/{site}/public/'.format(site=site) + str(random.getrandbits()) + '.txt'
+        #fdata = str(random.getrandbits(512))
+        #self._server_connection.saveFile(fname, fdata)
         return True
+
+
+class MysqlStrategy(DebianStrategy):
+    PRE_INSTALL_COMMANDS = ' && '.join(['export DEBIAN_FRONTEND="noninteractive"',
+                            'debconf-set-selections <<< "mysql-server mysql-server/root_password password {passw}"',
+                            'debconf-set-selections <<< "mysql-server mysql-server/root_password_again password {passw}"'
+                            ,'apt-get install -y mysql-server'])
+    
+    def __init__(self, server_connection, sql_pass=None):
+        super(self.__class__, self).__init__(server_connection)
+        if sql_pass:
+            self._sql_pass = sql_pass
+        else:
+            self._sql_pass = _random_pass()
+
+ 
+    def execute(self):
+        self._server_connection.runCommand(MysqlStrategy.PRE_INSTALL_COMMANDS)
+        if not self.verifyInstallation('mysql-server'):
+            self._logger.error("Failed installing MYSQL Server package")
+            return False
+        self._server_connection.saveFile('[client]\nuser=root\npassword=' + self._sql_pass, '.my.cnf')
+        self._server_connection.runCommand('nohup myslqd_safe & 2>&1')
+        if not self._server_connection.runCommandAnticipate('ps aux | grep sql', '.*/mysqld.*'):
+            self._logger.error("mysqld failed to start")
+            return False
+        return True
+
+    def get_password(self):
+        return self._sql_pass
+
+def _random_pass(self):
+    # This might be our first login, generate a extremely strong random password
+    # temporarily in case we need to switch passwords on login
+    # not in use at the moment
+    mech = sha1()
+    mech.update(str(random.getrandbits(512)))
+    return mech.digest().encode('base64').replace('\\','').replace('=','')
