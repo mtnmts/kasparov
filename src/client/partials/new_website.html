@@ -11,16 +11,7 @@
         <label for="rootPasswordInput">Password</label>
         <input type="password" class="form-control" id="rootPasswordInput" ng-model="website_form.pass" placeholder="Password">
         </div>
-        <div class="panel panel-default">
-        <div class="panel-heading">
-          Actions & Installations
-        </div>
-        <div class="panel-body listsites texer">
-      <label ng-repeat="action in actions" style="padding: 5px;">
-        <input type="checkbox"  ng-model="website_form.actions[action.id]" id="{{action.id}}" checklist-value="website_form.actions_chosen" ng-true-value="true" ng-false-value="false"> {{action.text}}
-      </label>
-      </div>
-      </div>
+    
     <button type="submit" class="btn btn-default" ng-click="submitNewWebsite(website_form)">Submit</button>
     <button type="submit" class="btn btn-default" ng-click="submitNewWebsiteAnother(website_form)">Submit & Add Another</button>
   </form>

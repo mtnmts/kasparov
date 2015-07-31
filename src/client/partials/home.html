@@ -4,12 +4,12 @@
   <h1>Websites</h1>
 	<li class="list-group-item list-group-item-info siteitem" ng-repeat="website in websites">
 		  <span>
-		  <span class="texty"><b>IP Address: </b>{{ website.ip }} </span>
+		  <span class="texty"><b>IP Address: </b>{{ website.host }} </span>
 		  	<span class="pull-right">
 			  	<button type="button" class="btn btn-xs" data-id="{{website.id}}" ng-click="install($event)">
 	  				<span class="glyphicon glyphicon-play" aria-hidden="true"></span> Install
 				</button>
-				<button type="button" class="btn btn-xs" data-id="{{website.id}}" ng-click="install($event)">
+				<button type="button" class="btn btn-xs" data-id="{{website.id}}" ng-click="configure($event)">
 	  				<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Configure
 				</button>
 			</span>

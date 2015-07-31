@@ -1,0 +1,12 @@
+   <div class="center-block">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+          Actions & Installations for {{website.host}}
+        </div>
+        <div class="panel-body listsites texer">
+      <label ng-repeat="action in actions" style="padding: 5px;">
+        <input type="checkbox"  ng-model="website_form.actions[action.id]" id="{{action.id}}" checklist-value="website_form.actions_chosen" ng-true-value="true" ng-false-value="false"> {{action.text}}
+      </label>
+      </div>
+      </div>
+      </div>

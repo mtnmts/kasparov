@@ -8,13 +8,6 @@ creatorApp.controller('ApplicationCtrl' ,
 
 creatorApp.controller('NewWebsiteCtrl', function($scope, $location,flash,  Restangular) {
       $scope.base = Restangular.all('/api/website');
-      $scope.actions = [
-        {id : 1, text: 'Update & Upgrade (Recommended)'},
-        {id : 2, text: 'nginx (Web Server)'},
-        {id : 3, text: 'mySQL'},
-        {id : 4, text: 'PHP'},
-        {id : 5, text: 'Wordpress'}
-      ]
       $scope.submitNewWebsiteAnother = function (website_form) {
         flash("Added Website!");
         $scope.base.post(website_form);
@@ -33,7 +26,6 @@ creatorApp.controller('NewWebsiteCtrl', function($scope, $location,flash,  Resta
 
 creatorApp.controller('HomeCtrl', function($scope, $location, Restangular) {
       $scope.base = Restangular.all('/api/website');
-      //$scope.websites = {'ip' : '0.0.0.0', 'pass' : '1234', 'user': 'root'};
       $scope.base.getList().then(function(webs){
         $scope.websites = webs;
       });
@@ -41,6 +33,11 @@ creatorApp.controller('HomeCtrl', function($scope, $location, Restangular) {
         install_id = e.target.attributes['data-id'].value;
         console.log("Recieved install request for ID ", install_id);
         $location.path('/install/' + install_id);
+      }
+      
+        $scope.configure = function(e) {
+        install_id = e.target.attributes['data-id'].value;
+        $location.path('/configure/' + install_id);
       }
       
   });
@@ -74,7 +71,7 @@ function install_server(msg) {
   return msg
 }
 creatorApp.controller('InstallCtrl', function($scope,$websocket, $route, $routeParams, Restangular) {
-        $scope.install_id = $route.current.params.installId;
+        $scope.install_id = $route.current.params.siteId;
         r = Restangular.one('/api/website/' +  $scope.install_id).get();
         $scope.progress_prec = "5";
         $scope.main_log = [];
@@ -102,7 +99,16 @@ creatorApp.controller('InstallCtrl', function($scope,$websocket, $route, $routeP
 
 
 creatorApp.controller('configureCtrl', function($scope,$websocket, $route, $routeParams, Restangular) {
-        $scope.site_id = $route.current.params.siteId;     
+        $scope.site_id = $route.current.params.siteId;    
+        $scope.actions = [
+        {id : 1, text: 'Update & Upgrade (Recommended)'},
+        {id : 2, text: 'nginx (Web Server)'},
+        {id : 3, text: 'mySQL'},
+        {id : 4, text: 'PHP'},
+        {id : 5, text: 'Wordpress'}
+      ]
+      r = Restangular.one('/api/website/' +  $scope.site_id).get().then(function(site){$scope.website = site})
+      
   });
 
 
@@ -116,7 +122,7 @@ creatorApp.config(['$routeProvider',
         {
           templateUrl: 'static/partials/home.html',
           controller: 'HomeCtrl'
-        }).when('/install/:installId',
+        }).when('/install/:siteId',
         {
           templateUrl: 'static/partials/install.html',
           controller: 'InstallCtrl'

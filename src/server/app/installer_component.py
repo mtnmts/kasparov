@@ -2,7 +2,7 @@ from autobahn.asyncio.websocket import WebSocketServerProtocol
 import trollius as asyncio
 import json
 import globs
-from app.models import Target
+from app.models import RemoteServer
 from app.remote import strategies
 
 INSTALL_CMD_VAL = 'INSTALL_CMD'
@@ -41,8 +41,8 @@ class InstallServerProtocol(WebSocketServerProtocol):
 			return
 		if data[TYPE_KEY] == INSTALL_CMD_VAL:
 			logging.getLogger("ImportanceLog").error(str(data))
-			zta = Target(str(data['ip']),str(data['password']))
-			self._installServer(zta)
+			rmsr = RemoteServer.query.get(int(data['id']))
+			self._installServer(rmsr)
 
 
 	def _installServer(self, target):
