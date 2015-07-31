@@ -18,6 +18,7 @@ creatorApp.controller('NewWebsiteCtrl', function($scope, $location,flash,  Resta
       $scope.submitNewWebsiteAnother = function (website_form) {
         flash("Added Website!");
         $scope.base.post(website_form);
+        console.log(website_form);
       }
 
       $scope.submitNewWebsite = function (website_form) {
@@ -26,16 +27,7 @@ creatorApp.controller('NewWebsiteCtrl', function($scope, $location,flash,  Resta
         flash("Added Website!");
         $location.path('/home');
       }
-      $scope.submitInstall = function (website_form) {
-        console.log(website_form);
-        $scope.base.post(website_form).then(function(e) {
-          $scope.id = e.server_id;
-          flash("Installing Directly!");
-          $location.path('/install/' + $scope.id);
-          
-        
-        });
-      }
+   
      
   });
 
@@ -108,6 +100,12 @@ creatorApp.controller('InstallCtrl', function($scope,$websocket, $route, $routeP
   });
 
 
+
+creatorApp.controller('configureCtrl', function($scope,$websocket, $route, $routeParams, Restangular) {
+        $scope.site_id = $route.current.params.siteId;     
+  });
+
+
 creatorApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
@@ -122,6 +120,10 @@ creatorApp.config(['$routeProvider',
         {
           templateUrl: 'static/partials/install.html',
           controller: 'InstallCtrl'
+        }).when('/configure/:siteId',
+        {
+          templateUrl: 'static/partials/configure.html',
+          controller: 'configureCtrl'
         }).otherwise({
         redirectTo: '/home'
       });

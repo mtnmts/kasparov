@@ -40,6 +40,7 @@ class InstallServerProtocol(WebSocketServerProtocol):
 			self.sendMessage(json.dumps({'pong':'ping'}))
 			return
 		if data[TYPE_KEY] == INSTALL_CMD_VAL:
+			logging.getLogger("ImportanceLog").error(str(data))
 			zta = Target(str(data['ip']),str(data['password']))
 			self._installServer(zta)
 
@@ -47,59 +48,7 @@ class InstallServerProtocol(WebSocketServerProtocol):
 	def _installServer(self, target):
 		print("Installation has begun")
 		self._sendLogMsg("Creating Client Connection...")
-		sin.log = lambda msg : self._sendSecondaryMsg(msg)
-		try:
-			c = sin.create_client(target.ip, target.user, target.password)
-			self._sendProgressReport(15)
-		except:
-			self._sendErrorMsg("Failed connecting to server, Bad IP/Username/Password perhaps?")
-			self._sendErrorMsg("Check your connection to the internet also.")
-			self._sendProgressReport(100)
-			raise
-		self._sendLogMsg("Downloading toolkit script to server.")
-		try:
-			sin.fetch_script(c)
-			self._sendProgressReport(30)
-			self._sendLogMsg("Script downloaded successfully.")
-
-		except:
-			self._sendErrorMsg("Failed fetching script, check detailed log below.")
-			self._sendProgressReport(100)
-			raise
-		self._sendLogMsg("Performing cleanup and upgrades.")
-		try:
-			sin.perform_cleanup_upgrades(c)
-			self._sendProgressReport(50)
-			self._sendLogMsg("Cleanup & Upgrade completed successfully.")
-		except:
-			self._sendErrorMsg("Failed to perform cleanup/upgrades, check detailed log below.")
-			self._sendProgressReport(100)
-			raise
-
-		self._sendLogMsg("Installing MYSQL")
-		try:
-			success, passw = sin.install_mysql(c)
-			if success:
-				self._sendLogMsg("MYSQL Installation successful")
-				self._sendInfoMsg("MYSQL username: root, MYSQL Password: " + passw)
-				self._sendProgressReport(60)
-			if not success:
-				self._sendErrorMsg("MYSQL Installation Failed, MYSQL Password has been saved at .my.cnf though.")
-				self._sendInfoMsg("(Install Failed, but keep this just incase) MYSQL username: root, MYSQL Password: " + passw)
-				self._sendProgressReport(100)
-				raise Exception("Quitting!")
-		except:
-				self._sendErrorMsg("MYSQL Installation Failed.")
-				self._sendProgressReport(100)
-		self._sendLogMsg("Installing LAMP Stack (dropbear, nginx, php & php modules)")
-		try:
-			sin.install_lamp_stack(c)
-			self._sendLogMsg("LAMP Stack installed successfully")
-			self._sendProgressReport(100)
-		except:
-				self._sendErrorMsg("LAMP Stack Installation Failed.")
-				self._sendProgressReport(100)
-		self._sendInfoMsg("Finished Installation on " + c.ip)
+		
 		
 	def _sendSecondaryMsg(self, msg):
 		self.sendMessage(json.dumps({TYPE_KEY : LOG_SECONDARY_TYPE, PAYLOAD_KEY : msg}))

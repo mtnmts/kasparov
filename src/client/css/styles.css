@@ -6,6 +6,10 @@
 	margin-top: 40px;
 }
 
+.texer {
+	text-align: center;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Roboto', Georgia, Times, serif;
 }
@@ -14,10 +18,28 @@ p, div {
 }
 
 body { 
-    background: url(/static/img/noisy_grid.png) repeat 0 0;
+    color: rgba(242, 238, 238, 0.37);
+    background-color: #3688FF;
+    background-image: url(/static/img/bg.png);
 }
 
 .marginalize {
 	padding: 30px;
 	margin: 30px;
+}
+
+.listsites {
+position: relative;
+    padding: 30px 15px;
+    color: rgba(255,255,255,.8);
+    background-color: rgba(102, 97, 171, 0.63);
+    background-image: url(/static/img/bg.png);
+
+
+.siteitem {
+	background-color: rgba(14, 56, 22, 0.72);
+}
+
+.texty {
+	color: rgba(251, 251, 251, 0.79);
 }
