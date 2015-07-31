@@ -1,0 +1,12 @@
+# kasparov
+Kasparov is a web panel for managing remote servers and doing some common tasks on them, 
+designed for non-technology oriented people who want to perform some basic tasks, like setting up a web server.
+
+
+# Overview (Technology standpoint)
+- AsyncIO+Autobahn for websockets (Python)
+- AngularJS for data-binding
+- Restangular, Marshmallow (Python) for various other things
+- Bootstrap for design
+- SQLAlchemy + sqlite DB
+
