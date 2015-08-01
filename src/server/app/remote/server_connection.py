@@ -6,6 +6,7 @@ import logging
 import app.consts as consts
 import re
 import traceback
+from app.models import RemoteServer
 
 APT_GET_EXISTS_REGEX = ".*/apt-get"
 
@@ -21,6 +22,19 @@ class ServerConnection(object):
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._logger = logging.getLogger(__name__)
         self._connected = False
+
+    def __init__(self, remote_server):
+        if not isinstance(remote_server, RemoteServer):
+            raise Exception("Expected RemoteServer")
+        self._host = remote_server.host
+        self._username = remote_server.username
+        self._password = remote_server.password
+        self._client = paramiko.client.SSHClient()
+        self._client.load_system_host_keys()
+        self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._logger = logging.getLogger(__name__)
+        self._connected = False
+
 
     def verify(self):
         # Confirm VM is good for execution:

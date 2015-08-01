@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_restful import Resource, Api
+from app.models import RemoteServer
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -27,6 +28,9 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
     return response
 
+@app.before_first_request
+def initialize_database():
+    db.create_all()
 
 from models import db
 db.init_app(app) # delayed initialization
