@@ -1,3 +1,6 @@
+Broken and not in development for now
+--------------------------------------
+
 # kasparov
 Kasparov is a web panel for managing remote servers and doing some common tasks on them, 
 designed for non-technology oriented people who want to perform some basic tasks, like setting up a web server.

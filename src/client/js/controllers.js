@@ -31,8 +31,8 @@ creatorApp.controller('HomeCtrl', function($scope, $location, Restangular) {
       });
       $scope.install = function(e) {
         install_id = e.target.attributes['data-id'].value;
-        console.log("Recieved install request for ID ", install_id);
-        $location.path('/install/' + install_id);
+        console.log("Recieved overview request for ID ", install_id);
+        $location.path('/overview/' + install_id);
       }
       
         $scope.configure = function(e) {
@@ -97,6 +97,13 @@ creatorApp.controller('InstallCtrl', function($scope,$websocket, $route, $routeP
   });
 
 
+creatorApp.controller('OverviewCtrl', function($scope,$websocket, $route, $routeParams, Restangular) {
+        $scope.install_id = $route.current.params.siteId;
+        r = Restangular.one('/api/website/' +  $scope.install_id).get().then(function(site){$scope.website = site});
+        
+  });
+
+
 
 creatorApp.controller('configureCtrl', function($scope,$websocket, $route, $routeParams, Restangular) {
         $scope.site_id = $route.current.params.siteId;    
@@ -125,6 +132,10 @@ creatorApp.config(['$routeProvider',
         {
           templateUrl: 'static/partials/home.html',
           controller: 'HomeCtrl'
+        }).when('/overview/:siteId',
+        {
+          templateUrl: 'static/partials/overview.html',
+          controller: 'OverviewCtrl'
         }).when('/install/:siteId',
         {
           templateUrl: 'static/partials/install.html',
