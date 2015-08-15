@@ -3,10 +3,20 @@
         <div class="panel-heading">
           Actions & Installations for {{website.host}}
         </div>
-        <div class="panel-body listsites texer">
-      <label ng-repeat="action in actions" style="padding: 5px;">
-        <input type="checkbox"  ng-model="website_form.actions[action.id]" id="{{action.id}}" checklist-value="website_form.actions_chosen" ng-true-value="true" ng-false-value="false"> {{action.text}}
+        <div class="panel-body listsites texer" style="text-align: left;">
+      <form >
+      <div ng-repeat="action in actions">
+      <label style="padding: 5px;">
+        <input type="radio" name="chosen_action"  ng-model="actions.website_form.action" id="{{action.id}}" ng-value="action.id"> {{action.text}}
+        {{fields}}
+        <label ng-show="actions.website_form.action == {{action.id}}" ng-repeat="field in action.fields">
+          <input class="form-control" type="text" ng-model="actions.website_form.action_data[field]" placeholder="{{field}}" style="margin-left: 20px;">
+          
+        </label>
       </label>
+      </div>
+      <button type="submit" class="btn btn-default" ng-click="perform(actions.website_form)">Perform</button>
+      <form>
       </div>
       </div>
       </div>

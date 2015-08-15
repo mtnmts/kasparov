@@ -105,10 +105,13 @@ creatorApp.controller('configureCtrl', function($scope,$websocket, $route, $rout
         {id : 2, text: 'nginx (Web Server)'},
         {id : 3, text: 'mySQL'},
         {id : 4, text: 'PHP'},
-        {id : 5, text: 'Wordpress'}
+        {id : 5, text: 'Wordpress', fields : ['domain']}
       ]
       r = Restangular.one('/api/website/' +  $scope.site_id).get().then(function(site){$scope.website = site})
-      
+      $scope.perform = function(wf) {
+        console.log(wf);
+        console.log($scope.site_id)
+      }
   });
 
 
